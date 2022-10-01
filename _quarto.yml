@@ -1,0 +1,22 @@
+project:
+  type: book
+
+book:
+  title: "cookbook"
+  author: "Jane Doe"
+  date: "9/30/2022"
+  chapters:
+    - index.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+
