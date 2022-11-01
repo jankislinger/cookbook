@@ -1,0 +1,164 @@
+---
+title: "Cviceni 3: Data Transformation"
+editor: source
+---
+
+## Uloha 1
+
+Prozkoumejte dataset `babynames`
+
+```{r}
+# install.packages("babynames")
+require(babynames)
+babynames
+```
+
+Upravte kod tak, aby byl na vystupu pouze sloupec `n`.
+
+```{r}
+select(babynames, _______)
+```
+
+
+## Uloha 2
+
+Pouzijte funkci `filter`, dataset `babynames` a vhodny logicky operator a najdete:
+
+-   Vsechna jmena, kde hodnota `prop` je vetsi nebo rovna 0.08
+-   Vsechny deti se jmenem "Sea"
+
+```{r}
+filter(babynames, ____________)
+```
+
+
+## Uloha 3
+
+Pomoci logickych operatoru najdete radky, ktere obsahuji:
+
+- *Chlapce* se jmenem Sue
+- Jmena, ktera v roce 1880 pouzilo presne 5 nebo 6 deti
+- Jmena, ktera jsou jednim z nasledujicich jmen: Acura, Lexus nebo Yugo
+
+```{r}
+
+```
+
+
+## Uloha 4
+
+- Jaka je nejmensi hodnota `n`?
+- Jaka je nejvetsi hodnota znaku `prop`?
+
+```{r}
+
+```
+
+
+## Uloha 5
+
+Pomoci `|>` napiste posloupnost funkci, ktere:
+
+1.  vyfiltruje `babynames` pouze na divky narozene v roce 2017, *potom...*
+2.  vybere sloupce `name` a `n`, *potom...*
+3.  usporadejte vysledky tak, aby nejoblibenejsi jmena byla navrchu tabulky.
+
+```{r}
+
+```
+
+
+## Uloha 6
+
+1.  Oriznete `babynames` pouze na radky, ktere obsahuji vase jmeno a pohlavi.
+2.  Oriznete vysledek pouze na sloupce, ktere se zobrazi v grafu (neni nezbytne nutne, ale je to uzitecny postup).
+3.  Vysledky vykreslete jako spojnicovy graf s rokem na ose x a relativni cetnosti na ose y.
+
+```{r}
+
+```
+
+
+## Uloha 7
+
+Doplnte nize uvedeny kod, abyste vybrali radky, kde `name == "Khaleesi"`. Pote pouzijte `summarise()` a `sum()` a `min()` ke zjisteni:
+
+1.  Celkovy pocet deti se jmenem Khaleesi
+2.  Prvni rok, kdy se Khaleesi objevila v datech
+
+```{r}
+babynames ___ 
+  filter(_______________________) ___
+  ___________(total = ________, first = _______)
+```
+
+
+## Uloha 8
+
+Pouzijte funkce `group_by()`, `summarise()` a `arrange()` pro zobrazeni deseti nejpopularnejsich jmen. Popularitu spocitejte jako celkovy pocet deti narozenych s danym pohlavim a jmenem.
+
+```{r}
+babynames |> 
+  _______(name, sex) |> 
+  _______(total = _____(n)) |> 
+  _______(desc(_____))
+```
+
+
+## Uloha 9
+
+Pouzijte funkci `group_by()` pro spocitani a vykresleni celkoveho poctu narozenych deti v jednotlivych letech.
+
+```{r}
+```
+
+
+## Uloha 10
+
+Pouzijte `mutate()` a `min_rank()` pro ocislovani jednotlivych radku v tabulce podle poctu `n` od nejvetsiho.
+
+```{r}
+babynames |> 
+  ______(rank = _______(____(n)))
+```
+
+
+## Uloha 11
+
+Seskupte datav tabulce `babynames` podle roku a potom ocislujte data podle poctu. Vyfiltruje pouze vysledky, kde `rank == 1` (nejvyssi hodnota dany rok).
+
+```{r}
+```
+
+
+## Uloha 12
+
+Najdete a opravte chyby v nasledujicich kodech. Ctete pozorne chybovou hlasku v konzoli.
+
+### Uloha 12.a
+
+```{r}
+babynames |> 
+  filter(name = "Mike")
+```
+
+### Uloha 12.b
+
+```{r}
+babynames |> 
+  filter(name == "Michael") |> 
+  ggplot(aes(year, prop, color = sex)) |>
+  geom_line()
+```
+
+### Uloha 12.c
+
+Nasledujici kod nespadne na zadne chybe, ale vraci `NA` hodnoty. Dokazete odhadnout proc?
+
+Napoveda: Nahradte funkce `mean` a `var` funkci `length`.
+
+```{r}
+babynames |> 
+  summarise(n = mean(n), n_var = var(n))
+```
+

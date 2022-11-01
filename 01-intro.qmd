@@ -1,0 +1,158 @@
+---
+title: "Informace o kurzu"
+editor: source
+format: revealjs
+execute:
+  echo: true
+---
+
+# Kurz analýzy dat v R
+
+Říjen 2022 \
+Jan Kislinger \
+ÚZEI
+
+## Cíle tohoto semináře
+
+1. Pochopit základy jazyka R
+2. Umět provádět jednoduché manipulace s daty
+3. Vizualizovat data a sdělovat výsledky
+
+
+## Naučíte se...
+
+- přístup **tidyverse** k jazyku R
+- efektivně používat RStudio
+- načítat data a manipulovat s nimi
+- vizualizovat data
+- automatizovat své každodenní úlohy v jednoduchých skriptech
+- vytvářet reporty a analýzy bez námahy
+- odhadovat jednoduché statistické modely
+
+
+## Nenaučíte se...
+
+- **base** přístup k R (starý způsob)
+- obecné programování v R
+- vývoj balíčků
+- efektivní sdílení práce s týmem
+- interaktivní ovládací panely (shiny)
+- jak trénovat pokročilé modely strojového učení
+- statistickou teorii
+
+
+# Pojmy
+
+## R
+
+- programovací jazyk
+- zaměřený na statistiku
+- open source
+- z velké části napsaný v C++ / fortranu
+
+## RStudio
+
+- vývojové prostředí
+- primárně zaměřené na práci s R
+- nástroje pro tidyverse
+- prohlížeč dat, prohlížeč grafů
+- Python, Julia, C++, ...
+
+## Tidyverse
+
+- sada knihoven v R
+- zpracování dat (dplyr, tidyr)
+- vizualizace (ggplot2)
+- statistické modelování (modelr)
+
+## Výhody R
+
+- otevřený zdrojový kód
+- reprodukovatelnost výsledků
+- snadné verzování
+- prostředí pro práci s daty (společně s RStudio)
+- komunita
+
+
+# Další vzdělávání
+
+## Přečtěte si
+
+![](https://d33wubrfki0l68.cloudfront.net/b88ef926a004b0fce72b2526b0b5c4413666a4cb/24a30/cover.png){fig-align="center"}
+
+## Další knihy
+
+- Advanced R
+- Text Mining with R
+- R Packages
+- Hands-On Programming with R
+- Software for Data Analysis
+- Machine Learning with R
+
+## Help Online
+
+- RStudio cheat sheets
+- Stack Overflow
+- Google
+- RStudio Community
+
+
+## Inspirace
+
+- R-bloggers
+- Medium posts
+- #TidyTuesdays na twitteru
+
+
+## TidyTuesdays
+
+![](images/tidyTuesday.jpeg){fig-align="center"}
+
+
+## Course Format
+
+- Presentation
+- Live coding
+- Exercises
+
+
+## Data Science
+
+![](images/transform-visualize-model-loop.png){fig-align="center"}
+
+Source: R for Data Science
+
+
+# RStudio
+
+## Panely
+
+- Console
+- Environment
+- Files, Plots, Help
+
+## New file
+
+- Novytváří soubor - je třeba jej uložit!
+- R script
+- Quarto - presentation, document
+
+
+## New project
+
+- Izolace kódu, dat, výstupů
+- Relativní cesty k souborům
+- Funguje všude a všem
+- Nepoužívejte `setwd()`
+
+
+## Zkratky
+
+- `ctrl + enter`: spustit řádek kódu
+- `ctrl + shift + enter`: spustit blok kódu
+- `ctrl + shift + m`: pipe `|>` / `%>%`
+- `ctrl + shift + c`: komentář
+- `ctrl + alt + i`: nový blok kódu
+- `ctrl + shift + p`: výběr akce
+- `ctrl + shift + a`: automatická oprava formátování
+

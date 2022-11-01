@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+/.quarto/
+.local/
+.cache/
+.config/
+
+*.html
+*_files/

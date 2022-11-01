@@ -1,0 +1,486 @@
+---
+title: "Data Transformation"
+editor: source
+format: revealjs
+execute:
+  echo: true
+---
+
+```{r setup}
+#| echo: false
+require(tidyverse)
+require(gapminder)
+require(babynames)
+
+options(width=150)
+
+iris <- as_tibble(iris)
+```
+
+## `dplyr` functions
+
+- `select()` select columns
+- `filter()` filter rows
+- `mutate()` create new columns
+- `arrange()`	re-order or arrange rows
+- `summarise()`	summarize values
+- `group_by()` allows for group operations in the “split-apply-combine” concept
+
+---
+
+![](images/cheat_sheets/data-transformation-1.png){fig-align="center"}
+
+
+# Select columns
+
+## Select columns explicitely
+
+```{r}
+select(mpg, manufacturer, cyl, hwy, cty)
+```
+
+
+## Negative select
+
+```{r}
+select(mpg, -model, -class)
+```
+
+## Select columns using range
+
+```{r}
+select(mpg, cyl:cty)
+```
+
+
+## Select columns using conditions
+
+```{r}
+select(mpg, starts_with("c"))
+```
+
+## Combine select methods
+
+```{r}
+select(iris, Species, ends_with("Width"))
+```
+
+
+## Exercise 1 - dataset
+
+Take a look at dataset `babynames`
+
+```{r}
+# install.packages("babynames")
+require(babynames)
+babynames
+```
+
+
+## Exercise 1
+
+Alter the code to select just the `n` column:
+
+```{r}
+#| eval: false
+select(babynames, _______)
+```
+
+
+## Quiz
+
+Which of these is NOT a way to select the `name` and `n` columns together?
+
+```{r}
+#| eval: false
+select(babynames, -c(year, sex, prop))
+select(babynames, name:n)
+select(babynames, starts_with("n"))
+select(babynames, ends_with("n"))
+```
+
+
+
+# Filter rows
+
+## Simple condition
+
+```{r}
+filter(mpg, hwy <= 14)
+```
+
+## Boolean operators
+
+- math: `==`, `<`, `<=`, `!=`
+- logical: and `&`, or `|`
+- set: `%in%`
+- valid values: `is.na()`
+- negation: `!is.na()`
+
+
+---
+
+```{r}
+data <- filter(diamonds, cut == "Premium")
+ggplot(data, aes(carat, price, color = cut)) +
+  geom_point()
+```
+
+---
+
+```{r}
+data <- filter(gapminder, country %in% c("Finland", "Sweden", "Norway"))
+ggplot(data, aes(gdpPercap, lifeExp, color = country)) +
+  geom_path()
+```
+
+## Multiple conditions
+
+```{r}
+filter(gapminder, continent == "Europe", year >= 2000)
+```
+
+## Exercise 2
+
+Use `filter`, `babynames`, and the logical operators to find:
+
+* All of the names where prop is greater than or equal to 0.08  
+* All of the children named "Sea"  
+
+```{r}
+#| eval: false
+filter(babynames, ____________)
+```
+
+
+## Exercise 3
+
+Use Boolean operators to return only the rows that contain:
+
+* _Boys_ named Sue
+* Names that were used by exactly 5 or 6 children in 1880
+* Names that are one of Acura, Lexus, or Yugo
+
+
+# Sort values
+
+## Ascending sort
+
+```{r}
+arrange(mpg, model)
+```
+
+## Descending sort
+
+```{r}
+arrange(mpg, desc(model))
+```
+
+
+## Descending sort - numeric
+
+```{r}
+arrange(mpg, -hwy)
+```
+
+
+## Sort by multiple values
+
+```{r}
+arrange(mpg, cyl, -displ)
+```
+
+## Exercise 4
+
+- What is the smallest value of `n`?
+- What is the largest value of `prop`?
+
+
+# Pipes
+
+---
+
+![](images/pipes.png){fig-align="center"}
+
+---
+
+Instead of
+
+```{r}
+#| eval: false
+f(x)
+```
+
+write
+
+```{r}
+#| eval: false
+x |> f()
+```
+
+---
+
+Instead of
+
+```{r}
+#| eval: false
+f(x, y)
+```
+
+write
+
+```{r}
+#| eval: false
+x |> f(y)
+```
+
+---
+
+Instead of
+
+```{r}
+#| eval: false
+f(g(x))
+```
+
+write
+
+```{r}
+#| eval: false
+x |> g() |> f()
+```
+
+## Some hints
+
+- Shortcut: `ctrl` + `shift` + `m`
+- Read "then"
+- Base `|>` since R 4.1 - use this
+- Magrittr `%>%` is slower but more versatile
+
+
+## Pipe with data
+
+```{r}
+mpg |> select(manufacturer, cyl, hwy, cty)
+```
+
+## Wrap lines
+
+```{r}
+mpg |>
+  select(manufacturer, cyl, hwy, cty)
+```
+
+## Chain operations
+
+```{r}
+mpg |>
+  select(manufacturer, cyl, hwy, cty) |> 
+  filter(cyl == 4)
+```
+
+## Together with ggplot
+
+```{r}
+gapminder |> 
+  filter(country %in% c("Finland", "Sweden", "Norway")) |> 
+  ggplot(aes(gdpPercap, lifeExp, color = country)) +
+  geom_path()
+```
+
+## Exercise 5
+
+Use `|>` to write a sequence of functions that: 
+
+1. Filters `babynames` to just the girls that were born in 2017, *then...*
+2. Selects the `name` and `n` columns, *then...*
+3. Arranges the results so that the most popular names are near the top.
+
+## Exercise 6
+
+1. Trim `babynames` to just the rows that contain your `name` and your `sex`  
+2. Trim the result to just the columns that will appear in your graph (not strictly necessary, but useful practice)
+3. Plot the results as a line graph with `year` on the x axis and `prop` on the y axis
+
+# Summarize data
+
+## Single statistic
+
+```{r}
+mpg |>
+  summarise(mean_hwy = mean(hwy))
+```
+
+## Multiple values
+
+```{r}
+mpg |>
+  summarise(mean_hwy = mean(hwy), mean_cty = mean(cty))
+```
+
+## Using two columns or none
+
+```{r}
+mpg |> 
+  summarise(cor = cor(cyl, hwy), count = n())
+```
+
+
+## Chaining with other functions
+
+```{r}
+mpg |> 
+  filter(manufacturer == "audi", year == 1999) |> 
+  summarise(max_cyl = max(cyl), random_model = sample(model, 1))
+```
+
+
+## Exercise 7
+
+Complete the code below to extract the rows where `name == "Khaleesi"`. Then use `summarise()` and `sum()` and `min()` to find:
+
+1. The total number of children named Khaleesi
+2. The first year Khaleesi appeared in the data
+
+```{r}
+#| eval: false
+babynames ___ 
+  filter(_______________________) ___
+  ___________(total = ________, first = _______)
+```
+
+# Calculate by groups
+
+## Seemingly does nothing
+
+```{r}
+iris |> 
+  group_by(Species)
+```
+
+
+## Chained with `summarise`
+
+```{r}
+iris |> 
+  group_by(Species) |> 
+  summarise(mean_sepal_length = mean(Sepal.Length))
+```
+
+---
+
+```{r}
+data <- iris |>
+  group_by(Species) |>
+  summarise(average = mean(Sepal.Length),
+            stdev = sd(Sepal.Length))
+data
+```
+
+---
+
+```{r}
+ggplot(data, aes(Species, average)) +
+  geom_col(fill = "lightBlue") +
+  geom_errorbar(aes(ymin = average - 2 * stdev,
+                    ymax = average + 2 * stdev),
+                width = 0.2)
+
+```
+
+## Exercise 8
+
+Use `group_by()`, `summarise()`, and `arrange()` to display the ten most popular names. Compute popularity as the *total* number of children of a single gender given a name.
+
+*(Hint: Be sure to remove each `_` before running the code)*
+
+```{r}
+#| eval: false
+babynames %>%
+  _______(name, sex) %>% 
+  _______(total = _____(n)) %>% 
+  _______(desc(_____))
+```
+
+
+## Exercise 9
+
+Use `group_by()` to calculate and then plot the total number of children born each year over time.
+
+# Mutate
+
+## Add new column
+
+```{r}
+mpg |> 
+  select(manufacturer, model, year, hwy) |> 
+  mutate(hwy_cons = 235.215 / hwy)
+```
+
+## Calculate delayed variables
+
+```{r}
+gapminder |> 
+  filter(country == "India") |> 
+  mutate(prev_pop = lag(pop))
+```
+
+
+## Calculate cummulative sums
+
+```{r}
+babynames |> 
+  filter(sex == "M", name == "Mike") |> 
+  mutate(cumcount = cumsum(n))
+```
+
+## Calculate statistics
+
+```{r}
+babynames |> 
+  filter(sex == "M", name == "Mike") |> 
+  select(-sex, -name) |> 
+  mutate(mean_count = mean(n), diff = n - mean_count)
+```
+
+## Exercise 10
+
+Use `mutate()` and `min_rank()`to rank each row in `babynames` from _largest_ n to lowest n.
+
+```{r}
+#| echo: false
+
+babynames %>% 
+  mutate(rank = min_rank(desc(n))) |> 
+  select(year, name, n, rank)
+```
+
+## Exercise 11
+
+Group `babynames` by **year** and then re-rank the data. Filter the results to just rows where `rank == 1`.
+
+```{r}
+#| echo: false
+
+babynames %>% 
+  group_by(year) |> 
+  mutate(rank = min_rank(desc(n))) |> 
+  select(year, name, n, rank) |> 
+  filter(rank == 1)
+
+```
+
+
+# Take aways
+
+* Extract variables with `select()`  
+* Extract cases with `filter()`  
+* Arrange cases, with `arrange()`  
+
+* Make tables of summaries with `summarise()`  
+* Make new variables, with `mutate()`  
+* Do groupwise operations with `group_by()`
+
+* Connect operations with `%>%`  
+
+

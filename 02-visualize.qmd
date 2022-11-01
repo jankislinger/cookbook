@@ -1,0 +1,470 @@
+---
+title: "Visualize"
+editor: source
+format: revealjs
+execute:
+  echo: true
+---
+
+```{r setup}
+#| echo: false
+require(tidyverse)
+```
+![](images/hex/ggplot2.png){fig-align="center"}
+
+---
+
+## Load the library
+
+```{r}
+#| eval: false
+
+require(ggplot2)
+# or
+require(tidyverse)
+```
+
+
+
+# Layers
+
+---
+
+## Common layers
+
+- `ggplot` - base
+- `aes` - x-axis, y-axis, color, group, size, ...
+- Geoms - shapes (points, lines, histogram, ...)
+- Scales, axis settings, color palletes, labeling
+- Facets
+- Themes
+
+Combine layers by adding (`+`), not pipes.
+
+---
+
+
+```{r}
+select(mpg, manufacturer:hwy)
+```
+
+---
+
+```{r}
+#| eval: false
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+- use data frame `mpg` as source data
+- draw points
+- map column `displ` to x-axis
+- map column `hwy` to y-axis
+
+---
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+---
+
+## Exercise 1
+
+Run this code to make a graph. Pay strict attention to spelling, capitalization and parentheses.
+
+```{r}
+#| eval: false
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+# Mappings
+
+
+## Common aesthetics
+
+- size
+- color
+- shape (e.g. points)
+- width (e.g. lines)
+- fill (e.g. bars)
+- alpha
+
+## Size - continous
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, size = hwy))
+```
+
+## Color - continuous
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = hwy))
+```
+
+## Color - discrete
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = trans))
+```
+
+## Shape - discrete
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, shape = class))
+```
+
+note the missing shape for suv
+
+## Data vs Explicit
+
+```{r}
+#| eval: false
+geom_SHAPE(mapping = aes(COLUMN NAMES), EXPLICIT VALUES)
+```
+
+- use column names inside `aes()`
+- use values after comma
+
+
+## Explicit color
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
+```
+
+## Explicit shape & size
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), shape = 8, size = 15)
+```
+
+
+## Common mistake
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+
+
+## Exercise 2
+
+In the next chunk, add color, size, alpha, and shape aesthetics to your graph. Experiment.
+
+Do different things happen when you map aesthetics to  discrete and continuous variables?
+
+What happens when you use more than one aesthetic?
+
+# Facets
+
+## Exercise 3
+
+What is the difference between `facet_grid` and `facet_wrap`?
+
+Hint: use `ctrl+shift+c` to comment / uncomment a line.
+
+---
+
+`facet_grid`:
+
+  - 2D grid (rows and/or columns)
+  
+`facet_wrap`:
+
+  - 1D ribbon wrapped into 2D
+  - can specify dimensions
+  
+---
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_wrap(~manufacturer)
+```
+
+# Labels
+
+## Exercise 4
+
+Add labels to your graph.
+
+```{r}
+#| eval: false
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = class)) +
+  labs(title = "Fuel Efficiency by Engine Size",
+       subtitle = "Data facetted by class",
+       x = "Engine Size (displacement in liters)",
+       y = "Fuel Efficiency (MPG)",
+       color = "Class of\nAutomobile",
+       caption = "Data from the EPA")
+```
+
+---
+
+```{r}
+#| echo: false
+ggplot(data = mpg) +
+  geom_point(mapping = aes(displ, hwy, color = class)) +
+  labs(title = "Fuel Efficiency by Engine Size",
+       subtitle = "Data facetted by class",
+       x = "Engine Size (displacement in liters)",
+       y = "Fuel Efficiency (MPG)",
+       color = "Class of\nAutomobile",
+       caption = "Data from the EPA")
+```
+
+# Geoms
+
+## What is the difference?
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{r}
+#| echo: false
+ggplot(data = mpg) +
+  geom_point(mapping = aes(class, hwy))
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| echo: false
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(class, hwy))
+```
+:::
+
+::::
+
+Same x-axis and y-axis; different chart
+
+## `geom_point`
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = class, y = hwy))
+```
+
+
+## `geom_boxplot`
+
+```{r}
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = class, y = hwy))
+```
+
+## `geom_jitter`
+
+```{r}
+ggplot(data = mpg) +
+  geom_jitter(mapping = aes(x = class, y = hwy), width = 0.15)
+```
+
+
+## `geom_violin`
+
+```{r}
+ggplot(data = mpg) +
+  geom_violin(mapping = aes(x = class, y = hwy))
+```
+
+
+## Common geom functions
+
+- `geom_point`
+- `geom_line`
+- `geom_bar`
+- `geom_histogram`
+- `geom_boxplot`
+
+Not all geoms use the same mappings!
+
+## `geom_histogram`
+
+```{r}
+ggplot(data = mpg) +
+  geom_histogram(mapping = aes(x = hwy), bins=25)
+```
+
+Note that `y` is missing
+
+## Exercise 5
+
+Make a chart that shows number of vehicles per class. Use different colors for each bar.
+
+```{r}
+#| echo: false
+ggplot(data = mpg) +
+  geom_bar(mapping = aes(x = class, fill = class))
+```
+
+## Combine geoms I
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+```
+
+
+## Combine geoms II
+
+```{r}
+ggplot(data = mpg, ) +
+  geom_violin(mapping = aes(x = class, y = hwy)) +
+  geom_jitter(mapping = aes(x = class, y = hwy), width = 0.05, alpha = 0.2)
+```
+
+
+# Global vs. Local
+
+## Local mapping - within `geom_point`
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+## Local mapping - within `ggplot`
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point()
+```
+
+
+## Mapping types
+
+Global
+
+- All geoms use it
+
+Local
+
+- Only specified geom uses it
+
+## Mix global & local
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(mapping = aes(color = class)) +
+  geom_smooth()
+```
+
+x, y shared; color only for points; single smoothing line
+
+## Using only global
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
+  geom_point() +
+  geom_smooth()
+```
+
+x, y and color shared; several smoothing lines
+
+
+# Tips
+
+## Unnamed arguments
+
+No need to name all arguments
+
+```{r}
+#| eval: false
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point()
+```
+
+
+- first argument to `ggplot` is `data`
+- second argument to `ggplot` is `mapping`
+- first two arguments to `aes` are `x` and `y`
+- first argument to `geom_*` is `mapping`
+
+## Save plots
+
+```{r}
+#| eval: false
+
+p <- ggplot(mpg, aes(displ, hwy)) + geom_point()
+
+# default size (7x7 inches)
+ggsave("my_mpg_chart.png", p)
+
+# specify size in pixels
+ggsave("my_mpg_chart.png", p,
+       width = 640, height = 480, units = "px")
+```
+
+... or right-click the image and select "Save image as..."
+
+## Interactive plots
+
+```{r}
+# install.packages("plotly")
+require(plotly)
+
+p <- ggplot(mpg, aes(displ, hwy)) + geom_point()
+ggplotly(p)
+```
+
+# Themes
+
+## Default theme
+
+```{r}
+ggplot(mpg, aes(displ, hwy, color = "class")) +
+  geom_point() +
+  theme_gray()  # default, changes nothing
+```
+
+
+## Change theme for a chart
+
+```{r}
+ggplot(mpg, aes(displ, hwy, color = "class")) +
+  geom_point() +
+  theme_classic()
+```
+
+## Change theme for entire notebook
+
+```{r}
+theme_set(theme_bw())
+
+ggplot(mpg, aes(displ, hwy, color = "class")) +
+  geom_point()
+```
+
+Warning: All following charts have this theme.
+
+# What else?
+---
+
+```{r}
+ggplot(diamonds, aes(carat, price, color = color)) +
+  geom_point(alpha = 0.01, shape = 16) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE) +
+  facet_wrap(~ cut)
+```
+
+---
+
+```{r}
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) +
+  geom_hex(bins=10) +
+  coord_fixed()
+```
+

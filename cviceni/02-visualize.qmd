@@ -1,0 +1,176 @@
+---
+title: "Cviceni 2: Visualize"
+editor: source
+---
+
+## Uloha 1
+
+Opiste a spustte kod z prezentace pro vytvoreni grafu. Venujte specialni pozornost hlaskovani, velkym / malym pismenum a zavorkam.
+
+```{r}
+
+```
+
+## Uloha 2
+
+Zmente barvu (color), velikost (size), pruhlednost (alpha) a tvar (shape) bodu v grafu podle dat. Experimentujte.
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+## Uloha 3
+
+Jaky je rozdil mezi funkci `facet_grid` a `facet_wrap`?
+
+Pomoci `ctrl + shift + c` zakomentujete a odkomentujete jednotlive radky kodu.
+
+```{r}
+p <- ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+p + facet_grid(. ~ cyl)
+# p + facet_grid(drv ~ .)
+# p + facet_grid(drv ~ cyl)
+# p + facet_wrap(~ class)
+# p + facet_wrap(~ class, ncol = 2)
+```
+
+## Uloha 4
+
+Pridejte popisky (`labs`) do grafu.
+
+-   nadpis: Spotreba paliva podle velikosti motoru
+-   podnadpis: Data rozdelena podle tridy vozidla
+-   osa x: Velikost motoru (litry)
+-   osa y: Spotreba (mpg)
+-   barva: Trida vozidla
+-   popisek: Zdroj - https://fueleconomy.gov/
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(displ, hwy, color = class))
+```
+
+## Uloha 5
+
+Vytvorte sloupcovy graf (bar chart) znazornujici pocet vozidel v jednotlivych tridach. Pro kazdou tridu pouzijte jinou barvu.
+
+Napoveda:
+
+-   Nepouzivejte mapovani pro y (dopocita se automaticky)
+-   Barva (color) a vypln (fill) u sloupcoveho grafu znamenaji ruzne veci
+
+```{r}
+ggplot(data = mpg) +
+  ________(mapping = aes(_______________________))
+```
+
+## Uloha 6
+
+Nasludujici grafy nejdou vytvorit kvuli jedne ci vice chybam. Chyby identifikujte a opravte. Ctete pozorne chybovou hlasku v konzoli.
+
+### Uloha 6.a
+
+```{r}
+ggplot(aes(year, hwy), mpg) +
+  geom_point()
+```
+
+### Uloha 6.b
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_points()
+```
+
+### Uloha 6.c
+
+```{r}
+ggplot(mpg, aes(manufacturer)) +
+  geom_col() +
+  labs(title = "Count models per manufacturer")
+```
+
+### Uloha 6.d
+
+```{r}
+ggplot(mpg)
+  + aes(year, hwy, col=factor(year))
+  + geom_jitter()
+```
+
+## Uloha 7
+
+Nactete knihovnu `gapminder` (nainstalujte, pokud bude potreba) a zjistete, co obsahuje datova sada. Popiste sousedovi, jaka data obsahuji jednotlive sloupecky. Muzete pouzit pripraveny kod nize.
+
+```{r}
+# install.packages("gapminder")
+require(gapminder)
+```
+
+```{r}
+gapminder
+```
+
+```{r}
+summary(gapminder)
+```
+
+```{r}
+?gapminder
+```
+
+### Uloha 7.a
+
+Nakreslete graf vyvoje ocekavaneho doziti pro jednotlive zeme. Pouzijte rok (year) na ose x, ocekavany vek doziti (lifeExp) na ose y a zemi (country) pro barvu. Hodi se zde vice bodovy nebo spojnicovy graf?
+
+Je takovy graf prehledny / pouzitelny? Vymyslete, jak by se dal upravit, aby byl prehlednejsi.
+
+```{r}
+ggplot(gapminder, aes(____________)) +
+  geom_________()
+```
+
+### Uloha 7.b
+
+Nakreslete bodovy graf zavislosti ocekavaneho veku doziti na hrubem domacim produktu na osobu. Vyznacte jednotlive kontinenty barevne a prolozte regresni primkou (dohromady pro vsechny zeme / kontinenty).
+
+Je takovy graf prehledny / pouzitelny? Vymyslete, jak by se dal upravit, aby byl prehlednejsi.
+
+```{r}
+ggplot(gapminder, aes(____________________)) +
+  _____________(aes(______________)) +
+  geom_smooth(m_____ = "lm", f______ = y ~ x)
+```
+
+## Uloha 8
+
+Podivejte se na dataset `PlantGrowth`, co obsahuje za data.
+
+Vyzkousejte ruzne varianty grafu s pouzitim obou sloupcu z tabulky.
+
+```{r}
+ggplot(PlantGrowth, aes(group, weight)) +
+  geom________()
+```
+
+## Uloha 9
+
+Pridejte popisky os a nazev grafu, zmente styl (tema) grafu na jine.
+
+Vsimnete si, ze je mozne do volby sloupce pridat i nejaky vzorec pro vypocet. Podivejte se take, jak by vypadal popisek osy, kdybychom ho neprepsali vlastnim textem.
+
+Dokazete odhadnout, co dela funkce `expand_limits`? Svoji domnenku si overte v napovede pomoci `?expand_limits`.
+
+```{r}
+__________(mpg, aes(displ, 235.21 / hwy)) +
+  geom_point() +
+  labs(_______ = "Zavislost spotreby na objemu motoru",
+       _______ = "S vetsim motorem roste spotreba paliva",
+       _______ = "Spotreba na dalnici [l/100km]",
+       _______ = "Objem motoru [litry]") +
+  theme___________() +
+  expand_limits(x = 0, y = 0)
+```
