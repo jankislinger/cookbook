@@ -41,10 +41,12 @@ require(tidyverse)
 
 Combine layers by adding (`+`), not pipes.
 
----
 
+## Table `mpg`
 
 ```{r}
+#| echo: false
+
 select(mpg, manufacturer:hwy)
 ```
 
@@ -138,6 +140,14 @@ geom_SHAPE(mapping = aes(COLUMN NAMES), EXPLICIT VALUES)
 ```{r}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
+```
+
+
+## Color inferred from data
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = hwy))
 ```
 
 ## Explicit shape & size
@@ -449,6 +459,13 @@ ggplot(mpg, aes(displ, hwy, color = "class")) +
 ```
 
 Warning: All following charts have this theme.
+
+## More themes
+
+- Type `theme_` to see the list
+- Use `theme()` to define manually
+- Package `tvthemes` (Simpsons, Game of Thrones, ...)
+- Write your own theme
 
 # What else?
 ---
