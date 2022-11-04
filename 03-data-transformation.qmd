@@ -8,6 +8,7 @@ execute:
 
 ```{r setup}
 #| echo: false
+
 require(tidyverse)
 require(gapminder)
 require(babynames)
@@ -396,9 +397,9 @@ Use `group_by()`, `summarise()`, and `arrange()` to display the ten most popular
 
 ```{r}
 #| eval: false
-babynames %>%
-  _______(name, sex) %>% 
-  _______(total = _____(n)) %>% 
+babynames |>
+  _______(name, sex) |>
+  _______(total = _____(n)) |>
   _______(desc(_____))
 ```
 

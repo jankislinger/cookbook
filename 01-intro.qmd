@@ -12,11 +12,11 @@ execute:
 Jan Kislinger \
 ÚZEI
 
-## Cíle tohoto semináře
+## Cíle semináře
 
 1. Pochopit základy jazyka R
 2. Umět provádět jednoduché manipulace s daty
-3. Vizualizovat data a sdělovat výsledky
+3. Vizualizovat data a komunikovat výsledky
 
 
 ## Naučíte se...
@@ -102,11 +102,6 @@ Jan Kislinger \
 - R-bloggers
 - Medium posts
 - #TidyTuesdays na twitteru
-
-
-## TidyTuesdays
-
-![](images/tidyTuesday.jpeg){fig-align="center"}
 
 
 ## Course Format

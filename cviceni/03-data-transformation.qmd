@@ -1,7 +1,11 @@
 ---
 title: "Cviceni 3: Data Transformation"
-editor: source
+editor: visual
 ---
+
+```{r setup}
+require(tidyverse)
+```
 
 ## Uloha 1
 
