@@ -20,8 +20,22 @@ babynames
 Upravte kod tak, aby byl na vystupu pouze sloupec `n`.
 
 ```{r}
-select(babynames, _______)
+select(babynames, n)
 ```
+
+## Diamonds
+
+```{r}
+data <- filter(diamonds, cut == "Premium")
+ggplot(data, aes(carat, price)) +
+  geom_point()
+```
+```{r}
+require(gapminder)
+
+filter(gapminder, country == "Finland" | country == "Sweden")
+```
+
 
 
 ## Uloha 2
@@ -32,7 +46,14 @@ Pouzijte funkci `filter`, dataset `babynames` a vhodny logicky operator a najdet
 -   Vsechny deti se jmenem "Sea"
 
 ```{r}
-filter(babynames, ____________)
+filter(babynames, prop >= 0.08)
+```
+
+```{r}
+filter(babynames, name == "Sea")
+```
+```{r}
+filter(babynames, prop >= 0.08, name == "Sea")
 ```
 
 
@@ -45,18 +66,35 @@ Pomoci logickych operatoru najdete radky, ktere obsahuji:
 - Jmena, ktera jsou jednim z nasledujicich jmen: Acura, Lexus nebo Yugo
 
 ```{r}
+filter(babynames, sex == "M", name == "Sue")
+```
 
+```{r}
+filter(babynames, year == 1880, n %in% c(5, 6))
+filter(babynames, year == 1880, n == 5 | n ==6)
+filter(babynames, year == 1880, n >= 5, n <= 6)
+```
+
+```{r}
+filter(babynames, name %in% c("Acura", "Lexus", "Yugo"))
 ```
 
 
 ## Uloha 4
 
+Nad datasetem `babynames`:
+
 - Jaka je nejmensi hodnota `n`?
 - Jaka je nejvetsi hodnota znaku `prop`?
 
 ```{r}
-
+arrange(babynames, n)
 ```
+
+```{r}
+arrange(babynames, desc(prop))
+```
+
 
 
 ## Uloha 5
@@ -68,6 +106,32 @@ Pomoci `|>` napiste posloupnost funkci, ktere:
 3.  usporadejte vysledky tak, aby nejoblibenejsi jmena byla navrchu tabulky.
 
 ```{r}
+girls_2017 <- babynames |> 
+  filter(sex == "F", year == 2017) |>
+  select(name, n) |>  # just to make it smaller
+  arrange(-n)
+```
+
+```{r}
+babynames |>
+  filter(sex == "F", year == 2017) %T>%
+  # View("after filter") |>
+  select(name, n) |>  # just to make it smaller
+  # arrange(-n) |>
+  identity()
+```
+
+
+```{r}
+babynames |> 
+  filter(sex == "F", year == 2017) |> 
+  select(name, n) |> 
+  arrange(-n) -> 
+  data_2017
+```
+
+```{r}
+arrange(select(filter(babynames, sex == "F", year == 2017), name, n), -n)
 
 ```
 
@@ -79,7 +143,13 @@ Pomoci `|>` napiste posloupnost funkci, ktere:
 3.  Vysledky vykreslete jako spojnicovy graf s rokem na ose x a relativni cetnosti na ose y.
 
 ```{r}
-
+babynames |> 
+  filter(sex == "M", name == "Jan") |> 
+  # select(-sex, -name) |> 
+  select(year, prop) |> 
+  ggplot(aes(year, prop)) + 
+  geom_line() +
+  scale_y_continuous(labels=scales::percent)
 ```
 
 
@@ -91,9 +161,9 @@ Doplnte nize uvedeny kod, abyste vybrali radky, kde `name == "Khaleesi"`. Pote p
 2.  Prvni rok, kdy se Khaleesi objevila v datech
 
 ```{r}
-babynames ___ 
-  filter(_______________________) ___
-  ___________(total = ________, first = _______)
+babynames |> 
+  filter(name == "Khaleesi") |> 
+  summarise(total = sum(n), first = min(year))
 ```
 
 
@@ -114,6 +184,32 @@ babynames |>
 Pouzijte funkci `group_by()` pro spocitani a vykresleni celkoveho poctu narozenych deti v jednotlivych letech.
 
 ```{r}
+babynames |>
+  group_by(year, sex) |>
+  summarise(total = sum(n), .groups = "drop") |>
+  ggplot(aes(year, total / 1000000, fill = sex, color = sex)) +
+  geom_area(alpha = 0.4) +
+  geom_vline(xintercept = 1958, alpha = 0.5) +
+  labs(y = "Number of children [million]") +
+  theme_minimal()
+
+```
+
+
+```{r}
+babynames |> 
+  group_by(sex, name) |> 
+  mutate(cumcount = cumsum(n)) |> 
+  filter(name == "Mary")
+
+```
+
+```{r}
+babynames |> 
+  group_by(year, sex) |> 
+  mutate(n_year = sum(n)) |> 
+  ungroup() |> 
+  mutate(perc = round(100 * n / n_year, 2))
 ```
 
 

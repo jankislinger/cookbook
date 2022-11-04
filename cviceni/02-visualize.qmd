@@ -11,6 +11,11 @@ require(tidyverse)
 
 Opiste a spustte kod z prezentace pro vytvoreni grafu. Venujte specialni pozornost hlaskovani, velkym / malym pismenum a zavorkam.
 
+```{r load-data}
+#| echo: false
+
+```
+
 ```{r}
 
 ```
@@ -21,7 +26,8 @@ Zmente barvu (color), velikost (size), pruhlednost (alpha) a tvar (shape) bodu v
 
 ```{r}
 ggplot(data = mpg) +
-  geom_point(mapping = aes(x = displ, y = hwy))
+  geom_point(mapping = aes(x = ifelse(manufacturer == "audi", displ + 100, displ), y = hwy, color = cyl))
+
 ```
 
 ## Uloha 3
@@ -34,7 +40,8 @@ Pomoci `ctrl + shift + c` zakomentujete a odkomentujete jednotlive radky kodu.
 p <- ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy))
 
-p + facet_grid(. ~ cyl)
+p
+# p + facet_grid(. ~ cyl)
 # p + facet_grid(drv ~ .)
 # p + facet_grid(drv ~ cyl)
 # p + facet_wrap(~ class)
@@ -53,8 +60,19 @@ Pridejte popisky (`labs`) do grafu.
 -   popisek: Zdroj - https://fueleconomy.gov/
 
 ```{r}
+#| fig-cap: SOme text
+
 ggplot(data = mpg) +
-  geom_point(mapping = aes(displ, hwy, color = class))
+  geom_point(mapping = aes(x = displ, y = hwy, color = class)) +
+  labs(
+    title = "Fuel Efficiency by Engine Size",
+    subtitle = "Data facetted by class",
+    x = "Engine Size (displacement in liters)",
+    y = "Fuel Efficiency (MPG)",
+    color = "Class of\nAutomobile",
+    caption = "Data from the EPA"
+  )
+
 ```
 
 ## Uloha 5
@@ -68,7 +86,16 @@ Napoveda:
 
 ```{r}
 ggplot(data = mpg) +
-  ________(mapping = aes(_______________________))
+  geom_bar(mapping = aes(x = class, colour = class), alpha = 1, width = 0.7, size = 3, fill="darkGray") +
+  theme_minimal() +
+  theme(text = element_text(family = "Serif"))
+
+```
+
+```{r}
+p <- ggplot(data = mpg, ) +
+  geom_jitter(mapping = aes(x = class, y = hwy), width = 0.05, alpha = 0.2) +
+  geom_violin(mapping = aes(x = class, y = hwy), alpha = 0.1)
 ```
 
 ## Uloha 6
@@ -78,31 +105,46 @@ Nasludujici grafy nejdou vytvorit kvuli jedne ci vice chybam. Chyby identifikujt
 ### Uloha 6.a
 
 ```{r}
-ggplot(aes(year, hwy), mpg) +
+ggplot(mapping = aes(year, hwy), data = mpg) +
   geom_point()
+```
+
+```{r}
+ggplot(mpg) +
+  geom_point(aes(year, hwy))
 ```
 
 ### Uloha 6.b
 
 ```{r}
 ggplot(mpg, aes(displ, hwy)) +
-  geom_points()
+  geom_point()
 ```
 
 ### Uloha 6.c
 
 ```{r}
 ggplot(mpg, aes(manufacturer)) +
-  geom_col() +
+  geom_bar() +
+  labs(title = "Count models per manufacturer")
+```
+
+```{r}
+ggplot(mpg, aes(manufacturer)) +
+  geom_bar() +
   labs(title = "Count models per manufacturer")
 ```
 
 ### Uloha 6.d
 
 ```{r}
-ggplot(mpg)
-  + aes(year, hwy, col=factor(year))
-  + geom_jitter()
+ggplot(mpg) +
+  aes(year, hwy, col = factor(year)) +
+  geom_jitter() +
+  scale_x_continuous(
+    breaks = c(1999, 2008), minor_breaks = 1990:2010,
+    labels = c("first", "second")
+    )
 ```
 
 ## Uloha 7
@@ -133,8 +175,18 @@ Nakreslete graf vyvoje ocekavaneho doziti pro jednotlive zeme. Pouzijte rok (yea
 Je takovy graf prehledny / pouzitelny? Vymyslete, jak by se dal upravit, aby byl prehlednejsi.
 
 ```{r}
-ggplot(gapminder, aes(____________)) +
-  geom_________()
+
+ggplot(gapminder, aes(year, lifeExp, color = country)) +
+  geom_line(show.legend = FALSE)
+```
+
+```{r}
+gapminder %>%
+  group_by(year, continent) %>%
+  summarise(lifeExp = mean(lifeExp)) %>%
+  ggplot(aes(year, lifeExp, color = continent)) +
+  geom_line() +
+  expand_limits(y = 0)
 ```
 
 ### Uloha 7.b
@@ -144,9 +196,14 @@ Nakreslete bodovy graf zavislosti ocekavaneho veku doziti na hrubem domacim prod
 Je takovy graf prehledny / pouzitelny? Vymyslete, jak by se dal upravit, aby byl prehlednejsi.
 
 ```{r}
-ggplot(gapminder, aes(____________________)) +
-  _____________(aes(______________)) +
-  geom_smooth(m_____ = "lm", f______ = y ~ x)
+ggplot(gapminder, aes(gdpPercap, lifeExp)) +
+  geom_point(aes(color = continent), alpha = .3) +
+  geom_smooth(
+    aes(color=factor(year)),
+    method = "lm", formula = y ~ a + b * log(x), se = F,
+  ) +
+  expand_limits(y = c(0, 100)) +
+  scale_x_log10()
 ```
 
 ## Uloha 8

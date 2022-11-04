@@ -1,0 +1,30 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+crossref:
+  fig-title: Graf
+  fig-prefix: Graf
+---
+
+```{r setup}
+require(tidyverse)
+```
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+#| fig-cap: Text pod grafem.
+#| label: fig-consumptions
+
+ggplot(mpg) + geom_point(aes(hwy, cty))
+```
+
+-   @fig-consumptions znazornuje souvislost mezi spotrebou ve meste a na dalnici.
+-   Souvislost mezi spotrebami je zrejma z [grafu @fig-consumptions].
