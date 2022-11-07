@@ -1,0 +1,182 @@
+---
+title: "Statistika"
+format: html
+editor: visual
+---
+
+```{r setup}
+#| message: false
+
+
+require(tidyverse)
+require(readxl)
+require(janitor)  # clean_names
+require(ggmosaic)
+
+theme_set(theme_minimal())
+```
+
+```{r}
+excel_sheets("data/Zkušební soubor dat .xlsx")
+```
+
+```{r}
+data <- read_xlsx("data/Zkušební soubor dat .xlsx", sheet = "Průřezová data", skip = 3) |> 
+  clean_names()
+
+```
+
+## Testovani hypotez
+
+```{r}
+ggplot(data, aes(prumerny_vynos_psenice)) +
+  geom_histogram(bins = 50) +
+  geom_vline(xintercept = 6.6, color = "red")
+```
+
+```{r}
+t.test(prumerny_vynos_psenice ~ 1, data, mu = 6.6)
+```
+
+```{r}
+t.test(1 / prumerny_vynos_psenice ~ 1, data, mu = 1 / 6.6)
+1 / 0.1559599
+```
+
+```{r}
+t.test(prumerny_vynos_psenice ~ pohlavi, data, var.equal = FALSE)
+```
+
+```{r}
+data |> 
+  summarise(x = sum(vek <= 40), n = n()) |> 
+  with(binom.test(x, n, p = 0.12))
+
+```
+
+```{r}
+expected <- tribble(
+  ~oblast_hospodareni, ~prop,
+  "K", 0.067,
+  "Ř", 0.445,
+  "B", 0.285,
+  "H", 0.203,
+)
+
+data |> 
+  group_by(oblast_hospodareni) |> 
+  summarise(count = n()) |> 
+  inner_join(expected, by = "oblast_hospodareni") |> 
+  mutate(relative = count / sum(count)) |> 
+  ggplot(aes(oblast_hospodareni)) +
+  geom_col(aes(y = relative), fill = "lightBlue") +
+  geom_point(aes(y = prop), color = "blue", size = 3, shape = 18) +
+  geom_segment(aes(y = relative, xend = oblast_hospodareni, yend = prop), color = "blue")
+```
+
+```{r}
+data |> 
+  group_by(oblast_hospodareni) |> 
+  summarise(count = n()) |> 
+  inner_join(expected, by = "oblast_hospodareni") |> 
+  with(chisq.test(count, p = prop))
+```
+
+## Kontingencni tabulka
+
+```{r}
+data |> 
+  count(vyrobni_zamereni, oblast_hospodareni) |> 
+  ggplot(aes(oblast_hospodareni, vyrobni_zamereni, size = n)) +
+  geom_point()
+```
+
+```{r}
+data |> 
+  ggplot(aes(oblast_hospodareni, fill = vyrobni_zamereni, color = vyrobni_zamereni)) +
+  geom_bar(alpha = 0.3)
+```
+
+```{r}
+data |> 
+  count(vyrobni_zamereni, oblast_hospodareni) |> 
+  group_by(oblast_hospodareni) |> 
+  mutate(rel = n / sum(n)) |> 
+  ggplot(aes(oblast_hospodareni, rel, fill = vyrobni_zamereni)) +
+  geom_col()
+```
+
+```{r}
+oblasti <- tribble(
+  ~oblast_hospodareni, ~oblast_hospodareni_desc,
+  "B", "brambor",
+  "H", "horska",
+  "K", "kukurice",
+  "Ř", "repa",
+)
+
+data |> 
+  count(vyrobni_zamereni, oblast_hospodareni) |> 
+  group_by(oblast_hospodareni) |> 
+  mutate(rel = n / sum(n)) |> 
+  inner_join(oblasti, by = "oblast_hospodareni") |> 
+  ggplot(aes(oblast_hospodareni_desc, rel, fill = vyrobni_zamereni)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+data |> 
+  ggplot() +
+  geom_mosaic(aes(product(vyrobni_zamereni, oblast_hospodareni),
+                  fill = vyrobni_zamereni),
+              show.legend = F) +
+  scale_y_productlist()
+```
+
+```{r}
+data |> 
+  with(chisq.test(oblast_hospodareni, vyrobni_zamereni))
+
+```
+
+```{r}
+data |> 
+  with(fisher.test(oblast_hospodareni, vyrobni_zamereni, simulate.p.value = TRUE))
+
+```
+
+## ANOVA
+
+```{r}
+ggplot(data, aes(oblast_hospodareni, hodnota_produkce)) +
+  geom_boxplot(aes(color = oblast_hospodareni, fill = oblast_hospodareni), alpha = 0.1) +
+  scale_y_continuous(labels = scales::label_number_si())
+```
+
+
+```{r}
+fit <- lm(hodnota_produkce ~ oblast_hospodareni, data)
+summary(fit)
+```
+
+```{r}
+anova(fit)
+```
+
+```{r}
+TukeyHSD(aov(fit))
+```
+
+## Korelace & Regrese
+
+```{r}
+ggplot(data, aes(vymera_zem_pudy, hodnota_produkce)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+```{r}
+fit <- lm(hodnota_produkce ~ vymera_zem_pudy, data)
+summary(fit)
+```
