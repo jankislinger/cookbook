@@ -1,13 +1,15 @@
 ---
 title: "Visualize"
 editor: source
-format: revealjs
+format: pdf
 execute:
   echo: true
 ---
 
 ```{r setup}
 #| echo: false
+#| message: false
+
 require(tidyverse)
 ```
 ![](images/hex/ggplot2.png){fig-align="center"}
@@ -423,6 +425,8 @@ ggsave("my_mpg_chart.png", p,
 ## Interactive plots
 
 ```{r}
+#| eval: false
+
 # install.packages("plotly")
 require(plotly)
 

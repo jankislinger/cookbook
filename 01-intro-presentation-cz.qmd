@@ -1,7 +1,7 @@
 ---
 title: "Informace o kurzu"
 editor: source
-format: revealjs
+format: pdf
 execute:
   echo: true
 ---
@@ -78,7 +78,9 @@ Jan Kislinger \
 
 ## Přečtěte si
 
-![](https://d33wubrfki0l68.cloudfront.net/b88ef926a004b0fce72b2526b0b5c4413666a4cb/24a30/cover.png){fig-align="center"}
+R for Data Science
+
+<!-- ![](https://d33wubrfki0l68.cloudfront.net/b88ef926a004b0fce72b2526b0b5c4413666a4cb/24a30/cover.png){fig-align="center"} -->
 
 ## Další knihy
 
