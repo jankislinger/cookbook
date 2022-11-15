@@ -154,7 +154,6 @@ ggplot(data, aes(oblast_hospodareni, hodnota_produkce)) +
   scale_y_continuous(labels = scales::label_number_si())
 ```
 
-
 ```{r}
 fit <- lm(hodnota_produkce ~ oblast_hospodareni, data)
 summary(fit)

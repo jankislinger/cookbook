@@ -5,6 +5,7 @@ editor: visual
 
 ```{r setup}
 require(tidyverse)
+require(babynames)
 ```
 
 ## Uloha 1
@@ -30,13 +31,12 @@ data <- filter(diamonds, cut == "Premium")
 ggplot(data, aes(carat, price)) +
   geom_point()
 ```
+
 ```{r}
 require(gapminder)
 
 filter(gapminder, country == "Finland" | country == "Sweden")
 ```
-
-
 
 ## Uloha 2
 
@@ -52,18 +52,18 @@ filter(babynames, prop >= 0.08)
 ```{r}
 filter(babynames, name == "Sea")
 ```
+
 ```{r}
 filter(babynames, prop >= 0.08, name == "Sea")
 ```
-
 
 ## Uloha 3
 
 Pomoci logickych operatoru najdete radky, ktere obsahuji:
 
-- *Chlapce* se jmenem Sue
-- Jmena, ktera v roce 1880 pouzilo presne 5 nebo 6 deti
-- Jmena, ktera jsou jednim z nasledujicich jmen: Acura, Lexus nebo Yugo
+-   *Chlapce* se jmenem Sue
+-   Jmena, ktera v roce 1880 pouzilo presne 5 nebo 6 deti
+-   Jmena, ktera jsou jednim z nasledujicich jmen: Acura, Lexus nebo Yugo
 
 ```{r}
 filter(babynames, sex == "M", name == "Sue")
@@ -79,13 +79,12 @@ filter(babynames, year == 1880, n >= 5, n <= 6)
 filter(babynames, name %in% c("Acura", "Lexus", "Yugo"))
 ```
 
-
 ## Uloha 4
 
 Nad datasetem `babynames`:
 
-- Jaka je nejmensi hodnota `n`?
-- Jaka je nejvetsi hodnota znaku `prop`?
+-   Jaka je nejmensi hodnota `n`?
+-   Jaka je nejvetsi hodnota znaku `prop`?
 
 ```{r}
 arrange(babynames, n)
@@ -94,8 +93,6 @@ arrange(babynames, n)
 ```{r}
 arrange(babynames, desc(prop))
 ```
-
-
 
 ## Uloha 5
 
@@ -121,7 +118,6 @@ babynames |>
   identity()
 ```
 
-
 ```{r}
 babynames |> 
   filter(sex == "F", year == 2017) |> 
@@ -134,7 +130,6 @@ babynames |>
 arrange(select(filter(babynames, sex == "F", year == 2017), name, n), -n)
 
 ```
-
 
 ## Uloha 6
 
@@ -152,7 +147,6 @@ babynames |>
   scale_y_continuous(labels=scales::percent)
 ```
 
-
 ## Uloha 7
 
 Doplnte nize uvedeny kod, abyste vybrali radky, kde `name == "Khaleesi"`. Pote pouzijte `summarise()` a `sum()` a `min()` ke zjisteni:
@@ -166,7 +160,6 @@ babynames |>
   summarise(total = sum(n), first = min(year))
 ```
 
-
 ## Uloha 8
 
 Pouzijte funkce `group_by()`, `summarise()` a `arrange()` pro zobrazeni deseti nejpopularnejsich jmen. Popularitu spocitejte jako celkovy pocet deti narozenych s danym pohlavim a jmenem.
@@ -177,7 +170,6 @@ babynames |>
   _______(total = _____(n)) |> 
   _______(desc(_____))
 ```
-
 
 ## Uloha 9
 
@@ -195,7 +187,6 @@ babynames |>
 
 ```
 
-
 ```{r}
 babynames |> 
   group_by(sex, name) |> 
@@ -212,24 +203,33 @@ babynames |>
   mutate(perc = round(100 * n / n_year, 2))
 ```
 
-
 ## Uloha 10
 
 Pouzijte `mutate()` a `min_rank()` pro ocislovani jednotlivych radku v tabulce podle poctu `n` od nejvetsiho.
 
 ```{r}
 babynames |> 
-  ______(rank = _______(____(n)))
+  select(-prop) |> 
+  mutate(rank = min_rank(desc(n)))
 ```
-
 
 ## Uloha 11
 
-Seskupte datav tabulce `babynames` podle roku a potom ocislujte data podle poctu. Vyfiltruje pouze vysledky, kde `rank == 1` (nejvyssi hodnota dany rok).
+Seskupte data v tabulce `babynames` podle roku a potom ocislujte data podle poctu. Vyfiltruje pouze vysledky, kde `rank == 1` (nejvyssi hodnota dany rok).
 
 ```{r}
+df <- babynames |> 
+  group_by(year) |> 
+  mutate(rank = min_rank(desc(n))) |> 
+  filter(rank == 1) |> 
+  select(-rank)
+df
 ```
 
+```{r}
+ggplot(df, aes(year, name, color = name)) +
+  geom_point()
+```
 
 ## Uloha 12
 
@@ -239,7 +239,7 @@ Najdete a opravte chyby v nasledujicich kodech. Ctete pozorne chybovou hlasku v 
 
 ```{r}
 babynames |> 
-  filter(name = "Mike")
+  filter(name == "Mike")
 ```
 
 ### Uloha 12.b
@@ -247,7 +247,7 @@ babynames |>
 ```{r}
 babynames |> 
   filter(name == "Michael") |> 
-  ggplot(aes(year, prop, color = sex)) |>
+  ggplot(aes(year, prop, color = sex)) +
   geom_line()
 ```
 
@@ -259,6 +259,11 @@ Napoveda: Nahradte funkce `mean` a `var` funkci `length`.
 
 ```{r}
 babynames |> 
-  summarise(n = mean(n), n_var = var(n))
+  summarise(n_mean = mean(n), n_var = var(n))
 ```
 
+```{r}
+babynames |> 
+  mutate(n_mean = mean(n), n_sd = sd(n)) |> 
+  filter(n >= n_mean - 2*n_sd,n  <= n_mean + 2*n_sd)
+```

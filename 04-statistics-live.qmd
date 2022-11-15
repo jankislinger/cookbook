@@ -1,0 +1,149 @@
+---
+title: "Statisticke modely"
+author: "Jan Kislinger"
+format: html
+editor: visual
+---
+
+```{r setup}
+#| message: false
+
+require(tidyverse)
+require(readxl)
+require(janitor)
+require(ggmosaic)
+
+theme_set(theme_minimal())
+```
+
+## Casova rada
+
+```{r}
+excel_sheets("data/Zkušební soubor dat .xlsx")
+```
+
+```{r}
+data <- read_xlsx("data/Zkušební soubor dat .xlsx",
+                  sheet = "Časová řada", skip = 4) |> 
+  mutate(is_sum = ...1 == "Suma", delete = cumany(is_sum)) |> 
+  filter(!delete)
+```
+
+```{r}
+data <- read_xlsx("data/Zkušební soubor dat .xlsx",
+                  sheet = "Časová řada", range = "A5:B34")
+colnames(data) <- c("datum", "cena")
+```
+
+```{r}
+ggplot(data, aes(datum, cena)) +
+  geom_line() +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x) +
+  expand_limits(y = 0)
+```
+
+## Prurezova data
+
+### Nacitani dat
+
+```{r}
+prur_data <- read_xlsx("data/Zkušební soubor dat .xlsx",
+                       sheet = "Průřezová data", skip = 3) |> 
+  clean_names()
+
+```
+
+### T test
+
+```{r}
+x <- rnorm(1000, mean = 7.3, sd = 500)
+t.test(x, mu = 6.6)
+```
+
+```{r}
+prur_data |>
+  pull(prumerny_vynos_psenice) |> 
+  t.test(mu = 6.6)
+```
+
+```{r}
+t.test(prur_data$prumerny_vynos_psenice)
+```
+
+```{r}
+with(prur_data, t.test(prumerny_vynos_psenice))
+```
+
+```{r}
+prur_data |> 
+  with(t.test(prumerny_vynos_psenice))
+```
+
+```{r}
+t.test(formula = prumerny_vynos_psenice ~ 1, data = prur_data, mu = 6.6)
+```
+
+```{r}
+t.test(formula = vymera_zem_pudy ~ pohlavi,
+       data = prur_data, alternative = "two.sided")
+```
+
+```{r}
+prur_data |> 
+  mutate(mlady = vek <= 40) |> 
+  summarise(pocet_mladych = sum(mlady), pocet_celkem = n()) |> 
+  with(binom.test(pocet_mladych, pocet_celkem, p = 0.12))
+```
+
+```{r}
+oblasti <- tribble(
+  ~oblast_hospodareni, ~hypoteza,
+  "K", 0.067,
+  "Ř", 0.445,
+  "B", 0.285,
+  "H", 0.203,
+)
+```
+
+```{r}
+oblast_counts <- prur_data |> 
+  group_by(oblast_hospodareni) |> 
+  summarise(pocet = n()) |> 
+  mutate(rel = pocet / sum(pocet)) |> 
+  inner_join(oblasti, by = "oblast_hospodareni")
+```
+
+```{r}
+ggplot(oblast_counts, aes(oblast_hospodareni)) +
+  geom_col(aes(y = rel), fill = "lightBlue", alpha = 0.6) +
+  geom_point(aes(y = hypoteza), color = "blue", size = 3, shape = 18) +
+  geom_segment(aes(y = hypoteza, yend = 0, xend = oblast_hospodareni), color = "blue")
+```
+
+```{r}
+with(oblast_counts, chisq.test(pocet, p = hypoteza))
+```
+
+```{r}
+prur_data |> 
+  group_by(oblast_hospodareni, vyrobni_zamereni) |> 
+  summarise(pocet = n(), .groups = "drop") |> 
+  pivot_wider(id_cols = "oblast_hospodareni",
+              names_from = "vyrobni_zamereni",
+              values_from = "pocet") |> 
+  select(-oblast_hospodareni) |> 
+  chisq.test()
+  # fisher.test(simulate.p.value = TRUE, B = 10000)
+```
+
+```{r}
+prur_data |> 
+  ggplot(aes(oblast_hospodareni, fill = vyrobni_zamereni)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(prur_data) +
+  geom_mosaic(aes(product(vyrobni_zamereni, oblast_hospodareni), fill = vyrobni_zamereni))
+```

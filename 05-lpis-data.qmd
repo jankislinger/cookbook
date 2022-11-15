@@ -1,0 +1,188 @@
+---
+title: "LPIS data"
+format: html
+editor: visual
+---
+
+```{r setup}
+require(tidyverse)
+require(readxl)
+require(janitor)
+
+theme_set(theme_minimal())
+```
+
+```{r data-load}
+# excel_sheets("data/Verejny_LPIS_141231.xlsx")
+lpis_14 <- read_xlsx("data/Verejny_LPIS_141231.xlsx") |> 
+  clean_names()
+```
+
+```{r}
+#| message: true
+
+lpis_14_txt <- read_delim(
+  "data/Verejny_LPIS_141231.txt",
+  # delim = "\t",
+  locale = locale(decimal_mark = ",")
+) |> 
+  clean_names() |> 
+  mutate(id_uz = as.integer(id_uz))
+
+```
+
+```{r}
+#| eval: false
+
+okresy <- read_xlsx("data/Kody_a_nazvy_okresu_CR.xlsx") |> 
+  clean_names() |> 
+  rename(okkod = okres_kod) |> 
+  filter(okres_nazev != "Pardubice")
+
+lpis_14 |> 
+  inner_join(okresy, by = c("okres_kod" = "okkod"))
+
+lpis_14 |> 
+  left_join(okresy, by = c("okres_kod" = "okkod"))
+
+```
+
+```{r}
+okresy <- read_xlsx("data/Kody_a_nazvy_okresu_CR.xlsx") |> 
+  clean_names()
+```
+
+```{r}
+lpis_14 <- lpis_14 |> 
+  left_join(okresy, by = c("okres_kod"))
+```
+
+```{r}
+# require(RODBC)
+# require(odbc)
+# require(DBI)
+# require(RMySQL)
+# 
+# odbc::dbConnect(
+#   dbDriver("MySQL"), host = "localhost", port = 33061
+#   )
+```
+
+```{r}
+lpis_14 |> 
+  group_by(okres_nazev) |> 
+  summarise(vymera_total = sum(vymera),
+            vysk_weighted = weighted.mean(vysk, vymera)) |> 
+  mutate(vysk_cr = weighted.mean(vysk_weighted, vymera_total),
+         diff = vysk_weighted - vysk_cr)
+```
+
+```{r}
+lpis_14 |> 
+  group_by(kultura, kulturakod) |> 
+  summarise(vymera = sum(vymera), .groups = "drop") |> 
+  mutate(zem_vymera = ifelse(kultura <= 7, vymera, 0)) |> 
+  summarise(podil_zem = sum(zem_vymera) / sum(vymera))
+```
+
+```{r}
+lpis_14 |> 
+  group_by(okres_nazev, kultura) |> 
+  summarise(vymera = sum(vymera), .groups = "drop_last") |> 
+  mutate(zem_vymera = ifelse(kultura <= 7, vymera, 0)) |> 
+  summarise(podil_zem = sum(zem_vymera) / sum(vymera))
+```
+
+```{r}
+lpis_14 |> 
+  group_by(okres_nazev, kultura) |> 
+  summarise(vymera = sum(vymera), .groups = "drop") |> 
+  mutate(zem_vymera = ifelse(kultura <= 7, vymera, 0)) |> 
+  group_by(okres_nazev) |> 
+  summarise(podil_zem = sum(zem_vymera) / sum(vymera))
+```
+
+```{r}
+
+files <- c(
+  "2014" = "data/Verejny_LPIS_141231.xlsx",
+  "2015" = "data/Verejny_LPIS_151231.xlsx",
+  "2016" = "data/Verejny_LPIS_161231.xlsx",
+  "2017" = "data/Verejny_LPIS_171231.xlsx",
+  "2018" = "data/Verejny_LPIS_181231.xlsx"
+)
+
+map_dfr(files, read_xlsx, .id = "year")
+```
+
+```{r}
+
+files <- c(
+  "data/Verejny_LPIS_141231.xlsx",
+  "data/Verejny_LPIS_151231.xlsx",
+  "data/Verejny_LPIS_161231.xlsx"
+  # "data/Verejny_LPIS_171231.xlsx",
+  # "data/Verejny_LPIS_181231.xlsx",
+  # "data/Verejny_LPIS_191231.xlsx",
+  # "data/Verejny_LPIS_201231.xlsx"
+)
+
+lpis <- map_dfr(files, read_xlsx, .id = "year")
+```
+
+```{r}
+roky <- c("2014" = 14, "2015" = 15)
+files <- paste0("data/Verejny_LPIS_", roky, "1231.xlsx")
+files
+```
+
+```{r}
+lpis |>
+  mutate(year = 2013 + as.integer(year))
+```
+
+```{r}
+lpis <- lpis |> 
+  clean_names() |> 
+  left_join(okresy, by = "okres_kod")
+```
+
+```{r}
+lpis |> 
+  group_by(rok, okres_nazev) |> 
+  summarise(vymera = sum(vymera), .groups = "drop") |> 
+  ggplot(aes(rok, vymera, color = okres_nazev)) +
+  geom_line(show.legend = FALSE)
+```
+
+```{r}
+lpis |> 
+  group_by(rok, kulturakod) |> 
+  summarise(vymera = sum(vymera), .groups = "drop") |> 
+  ggplot(aes(rok, vymera, color = kulturakod)) +
+  geom_line(show.legend = TRUE)
+```
+
+```{r}
+lpis |> 
+  group_by(kulturakod, kulturanaz) |> 
+  summarise(.groups="drop") |> 
+  filter(!grepl("Ý", kulturanaz))
+```
+
+```{r}
+kultury <- tribble(
+  ~kulturakod, ~kulturanaz,
+  "B", "rybnik",
+  "C", "chmelnice",
+)
+```
+
+```{r}
+lpis_14 |> 
+  group_by(kulturanaz) |> 
+  summarise(svaz = weighted.mean(svah, vymera)) |> 
+  ggplot(aes(reorder(kulturanaz, svaz), svaz)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
