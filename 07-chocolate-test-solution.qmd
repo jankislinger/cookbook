@@ -1,0 +1,97 @@
+---
+title: "Untitled"
+format: pdf
+editor: visual
+---
+
+## Priprava prostredi
+
+Nejprve nactete knihovny \`tidyverse\`, \`
+
+```{r setup}
+require(tidyverse)
+
+```
+
+```{r}
+data <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-01-18/chocolate.csv")
+```
+
+Podivejte se na sloupec `cooca_percent`. Obsahuje ciselne hodnoty v textovem formatu kvuli symbolu procent. Ten odstranime a prevedeme na cisla (`integer`).
+
+```{r}
+data <- data |> 
+  mutate(cocoa_percent = str_remove(cocoa_percent, "%"),
+         cocoa_percent = as.integer(cocoa_percent))
+```
+
+## Analyza
+
+Jake firmy (sloupecek `company_manufacturer`) vyrabi v prumeru cokoladu s nejvetsim podilem kakaa.
+
+```{r}
+data |> 
+  group_by(company_manufacturer) |> 
+  summarise(mean_cocoa_percent = mean(cocoa_percent)) |> 
+  arrange(-mean_cocoa_percent) |> 
+  head(3)
+```
+
+Z jakych zemi (`country_of_bean_origin`) ma cokolada nejlepsi hodnoceni (`rating`)? Zeme s poctem cokolad mensim nez 20 neberte v uvahu.
+
+```{r}
+data |> 
+  group_by(country_of_bean_origin) |> 
+  summarise(rating = mean(rating), n = n()) |> 
+  filter(n >= 20) |> 
+  arrange(-rating)
+```
+
+Kolik vyrobcu (sloupecek `company_manufacturer`, funkce `n_distinct`) melo hodnocenou nejakou cokoladu v roce 2013 (sloupecek `review_date`).
+
+## Vizualizace
+
+Pro kazdy rok (`review_date`) spocitejte prumerne hodnoceni cokolad (`rating`). Tento vyvoj vykreslete pomoci spojnicoveho grafu.
+
+```{r}
+data |> 
+  group_by(review_date) |> 
+  summarise(rating = mean(rating)) |> 
+  ggplot(aes(review_date, rating)) +
+  geom_line() +
+  expand_limits(y = 0)
+```
+
+Vykreslete graf zavislosti hodnoceni (sloupecek `rating`) na podilu kakaa v cokolade (sloupecek `cocoa_percent`). Graf prolozte nekterou z vyhlazovacich krivek pro lepsi prehlednost.
+
+```{r}
+data |> 
+  ggplot(aes(cocoa_percent, rating)) +
+  geom_jitter() +
+  geom_smooth(method = "loess", formula = y ~ x, se = FALSE)
+```
+
+Podivejte se na obsah sloupecku `most_memorable_characteristics`.
+
+```{r}
+
+```
+
+```{r}
+mean_rating <- data |> 
+  summarise(rating = mean(rating)) |> 
+  pull(rating)
+
+data |> 
+  select(most_memorable_characteristics, rating) |> 
+  separate_rows(most_memorable_characteristics) |> 
+  group_by(characteristic = most_memorable_characteristics) |> 
+  summarise(rating = mean(rating), count = n()) |> 
+  arrange(-count) |> 
+  head(30) |> 
+  mutate(characteristic = reorder(characteristic, rating)) |> 
+  ggplot(aes(rating, characteristic, fill = rating - mean_rating)) +
+  geom_col() +
+  geom_vline(xintercept = mean_rating, alpha = 0.4) +
+  scale_fill_gradient2(low = "red", high = "green", guide = NULL)
+```
