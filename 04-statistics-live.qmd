@@ -147,3 +147,44 @@ prur_data |>
 ggplot(prur_data) +
   geom_mosaic(aes(product(vyrobni_zamereni, oblast_hospodareni), fill = vyrobni_zamereni))
 ```
+
+## Regrese
+
+```{r}
+fit <- lm(hodnota_produkce ~ vymera_zem_pudy, prur_data)
+summary(fit)
+# y = a + b x
+# 231507.481 + (-2.009) * 20
+```
+
+```{r}
+fit <- lm(hodnota_produkce ~ vek + vymera_zem_pudy + prumerny_vynos_psenice, prur_data)
+summary(fit)
+
+```
+
+```{r}
+ggplot(prur_data, aes(vymera_zem_pudy, hodnota_produkce)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+```{r}
+fit <- lm(hodnota_produkce ~ oblast_hospodareni, prur_data)
+summary(fit)
+summary(aov(fit))
+```
+
+```{r}
+ggplot(cars, aes(speed, dist)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, fullrange = T, color = "red", se = FALSE) +
+  geom_smooth(method = "lm", formula = y ~ 0 + I(x^2), fullrange = T, color = "green") +
+  geom_smooth(method = "lm", formula = y ~ 0 + x+ I(x^2), fullrange = T, color = "blue", se = FALSE) +
+  expand_limits(x = c(0, 30))
+```
+
+```{r}
+fit <- lm(dist ~ 0 + I(speed^2), cars)
+summary(fit)
+```

@@ -4,7 +4,7 @@ RUN /rocker_scripts/install_pandoc.sh
 RUN /rocker_scripts/install_texlive.sh
 RUN install2.r --error \
     markdown \
-    plotly hexbin \
+    plotly hexbin janitor ggmosaic ggrepel \
     gapminder babynames
 
 RUN tlmgr init-usertree

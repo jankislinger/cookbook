@@ -1,10 +1,7 @@
 ---
 title: "LPIS data II"
-format: pdf
+format: html
 editor: visual
-echo: false
-message: false
-warning: false
 ---
 
 ## Priprava prostredi
@@ -13,12 +10,9 @@ Nejprve nactete knihovny `tidyverse`, `janitor` a `readxl`.
 
 ```{r setup}
 require(tidyverse)
-require(readxl)
 require(janitor)
-require(knitr)
-require(ggrepel)
+require(readxl)
 
-theme_set(theme_minimal())
 ```
 
 Nactete data ze souboru xlsx pro rok 2020.
@@ -39,95 +33,96 @@ Pouzijte ciselnik okresu pro pripojeni nazvu okresu ke zdrojove tabulce LPIS.
 
 ```{r pripojeni-okresu}
 data <- data |> 
-  inner_join(okresy, by = "okres_kod")
+  left_join(okresy, by = "okres_kod")
 ```
 
 ## Analyza dat
-
 
 Spocitejte pocet uzivatelu a pocet katastralnich uzemi v okrese Pardubice (funkce `n_distinct`).
 
 ```{r pocty-pardubice}
 data |> 
   filter(okres_nazev == "Pardubice") |> 
-  summarise(pocet_uzivatelu = n_distinct(id_uz),
-            pocet_kat_uzemi = n_distinct(ku_kod)) |> 
-  kable()
+  summarise(n = n(),
+            poc_uz = n_distinct(id_uz),
+            poc_ku = n_distinct(ku_kod))
 ```
 
-
-Seradte okresy podle (vazene) prumerne nadmorske vysky. Vyberte pouze okresy s prumernou nadmorskou vyskou alespon 550 mnm.
+Seradte okresy podle (vazene dle vymery) prumerne nadmorske vysky. Vyberte pouze okresy s prumernou nadmorskou vyskou alespon 550 mnm.
 
 ```{r nejvyse-polozene-okresy}
 data |> 
   group_by(okres_nazev) |> 
   summarise(vysk = weighted.mean(vysk, vymera)) |> 
-  arrange(-vysk) |> 
   filter(vysk >= 550) |> 
-  kable(digits=1)
+  arrange(desc(vysk))
 ```
-
 
 Najdete uzivatele, ktery ma pozemky v nejvice okresech. Jake okresy to jsou?
 
 ```{r uzivatel-nejvice-okresu}
 data |> 
-  distinct(id_uz, okres_nazev) |> 
+  group_by(id_uz) |> 
+  summarise(poc_okresu = n_distinct(okres_kod)) |> 
+  arrange(-poc_okresu) |> 
+  head(1) |> 
+  pull(id_uz)
+```
+
+```{r}
+id_uz_nejvice <- data |> 
+  group_by(id_uz, okres_nazev) |> 
+  summarise(.groups = "drop") |> 
+  group_by(id_uz) |> 
+  summarise(pocet_okresu = n()) |> 
+  filter(pocet_okresu == max(pocet_okresu)) |> 
+  pull(id_uz)
+```
+
+```{r}
+data |> 
+  group_by(id_uz, okres_nazev) |> 
+  summarise(.groups = "drop") |> 
   group_by(id_uz) |> 
   mutate(pocet_okresu = n()) |> 
   ungroup() |> 
-  filter(pocet_okresu == max(pocet_okresu)) |> 
-  select(id_uz, okres_nazev) |> 
-  arrange(okres_nazev) |> 
-  kable()
+  filter(pocet_okresu == max(pocet_okresu))
 ```
 
+```{r}
+data |> 
+  distinct(id_uz, okres_nazev) |> 
+  count(id_uz)
+```
+
+```{r}
+data |> 
+  filter(id_uz == id_uz_nejvice) |> 
+  group_by(okres_nazev) |> 
+  summarise()
+```
+
+```{r}
+
+```
 
 Vyfiltrujte z dat pouze takova katastralni uzemi, ktera maji nadprumernou nadmorskou vysku a vymeru alespon jeden hektar (zalezi na poradi techto podminek). Z techto uzemi vyberte 10 s nejmensim sklonem svahu. V jakem okrese se jich nachazi nejvice?
 
 ```{r nizky-sklon-vysoko}
-data |> 
-  group_by(okres_nazev, ku_kod) |> 
-  summarise(vysk = weighted.mean(vysk, vymera),
-            svah = weighted.mean(svah, vymera),
-            vymera = sum(vymera),
-            .groups = "drop") |> 
-  filter(vysk >= weighted.mean(vysk, vymera), vymera >= 1) |> 
-  arrange(svah) |> 
-  head(10) |> 
-  count(okres_nazev) |> 
-  arrange(-n) |> 
-  kable()
+
 ```
 
 Vyberte katastralni uzemi s podilem zorneni (`kultura` mezi 1 a 7) nad 99 %. Kolik takovych uzemi je?
 
 ```{r podil-zorneni}
-data |> 
-  group_by(ku_kod) |> 
-  summarise(podil = weighted.mean(kultura <= 7, vymera)) |> 
-  filter(podil > 0.99) |> 
-  count() |> 
-  kable()
+
 ```
 
 Rozdelte uzivatele na male, stredni a velke (stejne posty uzivatel v obou skupinach). Jaky je podil rybniku (`kultura == 97`) na celkove vymere v jednotlivych skupinach?
 
-
 ```{r}
-uzivatel_velikost <- data |> 
-  group_by(id_uz) |> 
-  summarise(vymera = sum(vymera)) |> 
-  mutate(vymera_skupina = cut(vymera, 3, c("maly", "stredni", "velky"))) |> 
-  select(-vymera)
 
-data |> 
-  left_join(uzivatel_velikost, by = "id_uz") |> 
-  group_by(vymera_skupina) |> 
-  summarise(podil_rybnik = weighted.mean(kultura == 97, vymera)) |> 
-  kable(digits = 6)
 ```
-
 
 ## Vizualizace
 
@@ -139,22 +134,29 @@ Navic: Nektere skupiny jsou tak male, ze je nema smysl vykreslovat do grafu. Nap
 data |> 
   filter(okres_nazev %in% c("Jihlava", "Sokolov")) |> 
   group_by(okres_nazev, kulturanaz) |> 
-  summarise(vymera = sum(vymera), .groups = "drop_last") |> 
-  mutate(relative = vymera / sum(vymera)) |> 
-  ggplot(aes(relative, okres_nazev, fill = kulturanaz, color = kulturanaz)) +
+  summarise(vymera = sum(vymera), .groups = "drop") |> 
+  group_by(okres_nazev) |> 
+  mutate(vymera_podil = vymera / sum(vymera)) |> 
+  ggplot(aes(okres_nazev, vymera_podil,
+             fill = kulturanaz, color = kulturanaz)) +
   geom_col(alpha = 0.3)
 ```
 
-Pro kazde katastralni uzemi spocitejte prumernou nadmorskou vysku a podil trvale travnateho porostu (`kulturakod == "T"`). Vykreslete graf zavislosti techto dvou velicin. Prolozte graf krivkou vyrovnanych hodnot.
+Pro kazdy okres spocitejte prumernou nadmorskou vysku a podil trvale travnateho porostu (`kulturakod == "T"`). Vykreslete graf zavislosti techto dvou velicin. Prolozte graf regresni primkou.
 
 ```{r ku-vyska-porost}
-data |>
-  group_by(ku_kod) |>
+data |> 
+  select(okres_nazev, vymera, kulturakod, vysk) |> 
+  mutate(vymera_tp = ifelse(kulturakod == "T", vymera, 0)) |> 
+  #   mutate(vumera_tp = (kulturakod == "T") * vymera) |> 
+  group_by(okres_nazev) |> 
   summarise(vysk = weighted.mean(vysk, vymera),
-            podil_porost = weighted.mean(kulturakod == "T", vymera)) |> 
-  ggplot(aes(vysk, podil_porost)) +
-  geom_point(alpha = 0.1) +
-  geom_smooth(color = "red", se = FALSE)
+            vymera = sum(vymera),
+            vymera_tp = sum(vymera_tp)) |> 
+  mutate(podil_tp = vymera_tp / vymera) |> 
+  ggplot(aes(vysk, podil_tp)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x)
 ```
 
 Stejny graf vygenerujte pro okresy. Graf prolozte regresni primkou.
@@ -162,31 +164,11 @@ Stejny graf vygenerujte pro okresy. Graf prolozte regresni primkou.
 Extra: Vyznacte jinou barvou okresy ze stredoceskeho kraje (NUTS4 zacina kodem CZ02). Je podil travnatych porostu vyssi nebo nizsi nez je ocekavani podle nadmorske vysky?
 
 ```{r okres-vyska-porost}
-data |>
-  group_by(okres_nazev, nuts4) |>
-  summarise(vysk = weighted.mean(vysk, vymera),
-            podil_porost = weighted.mean(kulturakod == "T", vymera),
-            .groups = "drop") |> 
-  mutate(stredocesky = str_starts(nuts4, "CZ02")) |> 
-  ggplot(aes(vysk, podil_porost, color = stredocesky)) +
-  geom_smooth(method = "lm", formula = y ~ x,
-              color = "grey", se = FALSE) +
-  geom_point(show.legend = F) +
-  geom_text_repel(aes(label = okres_nazev), ~ filter(.x, stredocesky),
-                  show.legend = FALSE)
 
 ```
 
 Naznacte rozdeleni (distribuci) velikosti katastralnich uzemi pro jednotlive okresy.
 
 ```{r rozdeleni-vymer}
-#| fig-height: 15
 
-data |> 
-  group_by(okres_nazev, ku_kod) |> 
-  summarise(vymera = sum(vymera), .groups = "drop") |> 
-  mutate(okres_nazev = reorder(okres_nazev, vymera, median)) |> 
-  ggplot(aes(vymera, okres_nazev)) +
-  geom_boxplot(outlier.shape = NA)
 ```
-
